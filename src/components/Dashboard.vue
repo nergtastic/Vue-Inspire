@@ -13,16 +13,21 @@
         <div class="list">
           <h5>Your tasks today:</h5>
           <div v-for="(task, index) in tasks ">
-            <a class="list-item">{{task.name}}</a><button class="btn btn-del bg-danger" @click="deleteTask(task.id)">x</button>
+            <button class="btn btn-check bg-success" @click="completeTask(task)">&#x2713;</button>
+            <a v-if="task.completed == false" class="list-item" @click="showTaskDetails(task)">{{task.name}}</a>
+            <a v-if="task.completed == true" style="text-decoration:line-through;" @click="showTaskDetails(task)">{{task.name}}</a>
+            <button class="btn btn-del bg-danger" @click="deleteTask(task.id)">x</button>
           </div>
         </div>
         <div class="task-form">
+          <div id="taskName" class="task-description"></div>
+          <div id="taskDescription" class="task-description">Click a task for more info.</div>
           <form @submit.prevent="createTask(); newTask={ } ">
             <a>New Task:</a><br />
             <input type="text" name="name" id="name" placeholder="Task name " v-model="newTask.name" required><br />
             <input type="text" name="description" id="description" placeholder="Description" v-model="newTask.description"
               required><br />
-            <button class="btn btn-secondary btn-task" type="submit">Add to Tasks</button>
+            <button class="btn btn-secondary btn-task bg-info" type="submit">Add Task</button>
           </form>
         </div>
       </div>
@@ -76,6 +81,16 @@
       },
       logout() {
         this.$store.dispatch('logout')
+      },
+      showTaskDetails(task) {
+        document.getElementById('taskDescription').innerText = '';
+        document.getElementById('taskName').innerText = '';
+        document.getElementById('taskName').innerText = task.name;
+        document.getElementById('taskDescription').innerText = task.description;
+      },
+      completeTask(task) {
+        task.completed = true;
+        this.$store.dispatch('completeTask', task)
       }
     },
     computed: {
@@ -151,12 +166,13 @@
     margin-bottom: 30px;
     overflow-y: auto;
     min-height: 150px;
-    max-width: 170px;
+    max-width: 200px;
+    min-width: 50%;
   }
 
   .list-item {
-    width: 10px;
     text-overflow: ellipsis;
+    cursor: pointer;
   }
 
   .task-form {
@@ -165,7 +181,7 @@
   }
 
   .bg-block {
-    background-color: rgba(0, 0, 0, .7);
+    background-color: rgba(0, 0, 0, .5);
     border-radius: 5px;
     padding: 25px;
   }
@@ -177,6 +193,7 @@
     margin: 10px;
     left: 0;
     height: auto;
+    min-width: 150px;
   }
 
   .btn-small {
@@ -184,9 +201,20 @@
     padding: 0px 5px;
     margin-top: 10px;
     background-color: darkcyan;
+    color: #ffffff;
   }
 
   .btn-del {
+    height: 15px;
+    width: 12px;
+    padding: 0px 0px 2px 1px;
+    margin: -2px 0px 0px 8px;
+    line-height: 10px;
+    font-size: 10px;
+    color: #ffffff;
+  }
+
+  .btn-check {
     height: 15px;
     width: 12px;
     padding: 0px 0px 2px 1px;
@@ -205,6 +233,14 @@
   .greeting {
     top: -100px;
     color: #ffffff;
+    min-width: 200px;
+  }
+
+  .task-description {
+    color: #ffffff;
+    margin-top: -15px;
+    margin-bottom: 10px;
+    min-height: 15px;
   }
 
   .grow {

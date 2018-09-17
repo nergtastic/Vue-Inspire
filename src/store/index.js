@@ -116,6 +116,11 @@ export default new vuex.Store({
                 dispatch('getTasks')
             })
         },
+        completeTask({ commit, dispatch }, task) {
+            db.collection('tasks').doc(task.id).update(task).then(() => {
+                dispatch('getTasks')
+            })
+        },
         getImage({ commit, dispatch }) {
             bgImage.get('').then(res => {
                 console.log('bgImage: ', res.data)
