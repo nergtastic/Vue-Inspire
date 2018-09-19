@@ -145,6 +145,7 @@
   .bg-inspire {
     background: no-repeat center center fixed;
     -webkit-background-size: cover;
+    background-size: 100%;
   }
 
   .quote {
