@@ -27,7 +27,9 @@ export default new vuex.Store({
     state: {
         user: {},
         tasks: [],
-        bgPic: {}
+        bgPic: {},
+        myWeather: {},
+        myQuote: {}
     },
     mutations: {
         setUser(state, user) {
@@ -54,7 +56,6 @@ export default new vuex.Store({
                     router.push({ name: 'Dashboard' })
                     firebase.auth().currentUser.updateProfile({ displayName: newUser.name })
                         .then(res => {
-                            console.log("Profile updated with name: ", newUser.name)
                         })
                         .catch(err => { console.error(err) })
                 }).catch(err => {
@@ -107,7 +108,6 @@ export default new vuex.Store({
         },
         createTask({ commit, dispatch }, newTask) {
             db.collection('tasks').add(newTask).then(doc => {
-                console.log("Created new task with ID: ", doc.id)
                 dispatch('getTasks')
             })
         },
@@ -123,24 +123,36 @@ export default new vuex.Store({
         },
         getImage({ commit, dispatch }) {
             bgImage.get('').then(res => {
-                console.log('bgImage: ', res.data)
-                console.log('Found: ', res.data.large_url)
-                console.log('Also found: ', res.data.url)
+                console.log('Image data: ', res.data)
                 commit('setPic', res.data)
             })
                 .catch(err => { console.error(err) })
         },
         getQuote({ commit, dispatch }) {
             quote.get('').then(res => {
-                console.log('Picked this quote out for you: ', res.data)
-                commit('setQuote', res.data)
+                console.log(res.data)
+                let fixedQuote = {}
+                fixedQuote.author = res.data.author
+                fixedQuote.quote = res.data.quote.toString();
+                fixedQuote.quote = fixedQuote.quote.replace('&#146;', "'")
+                fixedQuote.quote = fixedQuote.quote.replace("&#145;", "`")
+                fixedQuote.quote = fixedQuote.quote.replace("&#147;", "\"")
+                fixedQuote.quote = fixedQuote.quote.replace("&#148;", "\"")
+                console.log(res.data.quote)
+                console.log(fixedQuote.quote.replace("How", "Why not"))
+                commit('setQuote', fixedQuote)
             })
                 .catch(err => { console.error(err) })
         },
         getWeather({ commit, dispatch }) {
             weather.get('').then(res => {
-                console.log('Found your weather: ', res.data)
-                commit('setWeather', res.data)
+                // res.data.main.temp = Math.round(res.data.main.temp * 9 / 5 - 459.67)
+                let newWeather = {}
+                newWeather.temp = Math.round(res.data.main.temp * 9 / 5 - 459.67)
+                newWeather.name = res.data.name
+                newWeather.status = res.data.weather[0].main
+                console.log('Your weather: ', newWeather)
+                commit('setWeather', newWeather)
             })
                 .catch(err => { console.error(err) })
         }

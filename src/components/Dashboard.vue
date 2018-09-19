@@ -1,9 +1,10 @@
 <template>
   <div class="row bg-inspire" :style="{ 'background-image': 'url(' + bgPic.large_url + ')'}" style="height: 100vh; width: 100%; margin-top: -60px;">
     <div class="col-12">
-      <div class="col-1 weather-display bg-block">
-        <h4>Current Temp:</h4>
-        <h4>{{myWeather}}°F</h4>
+      <div class="col-1 weather-display bg-block" v-if="myWeather">
+        <h4>{{myWeather.name}}:</h4>
+        <h4>{{myWeather.temp}}°F</h4>
+        <h4>{{myWeather.status}}</h4>
       </div>
       <div class="col-2 offset-5 bg-block greeting">
         <h1>Hello, {{user.displayName}}!</h1>
@@ -12,6 +13,7 @@
       <div class="task-view bg-block stretch">
         <div class="list">
           <h5>Your tasks today:</h5>
+          <a v-if="tasks.length == 0" class="list-item">Hover here to add tasks.</a>
           <div v-for="(task, index) in tasks ">
             <button class="btn btn-check bg-success" @click="completeTask(task)">&#x2713;</button>
             <a v-if="task.completed == false" class="list-item" @click="showTaskDetails(task)">{{task.name}}</a>
@@ -31,9 +33,19 @@
           </form>
         </div>
       </div>
-      <div class="col-4 offset-4 quote bg-block grow">
+      <div class="bg-block refresh-display col-1">
+        <button class="btn btn-small btn-refresh" @click="getImage">&#8635;</button> New image
+      </div>
+      <div class="col-4 offset-4 quote bg-block grow" v-if="myQuote">
         <h6>{{myQuote.quote}}</h6>
         <h6>- {{myQuote.author}}</h6>
+      </div>
+      <div class="search-area bg-block">
+        <form method="get" action="http://www.google.com/search" target="_blank">
+          <input value="" name="q" placeholder="Google search" />
+          <input type="hidden" value="en" name="hl" />
+          <input type="hidden" value="lang_en" name="lr" />
+        </form>
       </div>
     </div>
   </div>
@@ -45,7 +57,6 @@
     data() {
       return {
         newTask: {},
-        isModalVisible: false,
       };
     },
     mounted() {
@@ -56,28 +67,21 @@
     },
     methods: {
       getImage() {
-        this.$store.dispatch()
+        this.$store.dispatch('getImage')
       },
       getQuote() {
-        this.$store.dispatch()
+        this.$store.dispatch('getQuote')
       },
       getWeather() {
-        this.$store.dispatch()
+        this.$store.dispatch('getWeather')
       },
       createTask() {
         this.newTask.user = this.user.uid
         this.newTask.completed = false
-        console.log('Creating that task for you...', this.newTask)
         this.$store.dispatch('createTask', this.newTask)
       },
       deleteTask(id) {
         this.$store.dispatch('deleteTask', id)
-      },
-      showModal() {
-        this.isModalVisible = true;
-      },
-      closeModal() {
-        this.isModalVisible = false;
       },
       logout() {
         this.$store.dispatch('logout')
@@ -89,9 +93,13 @@
         document.getElementById('taskDescription').innerText = task.description;
       },
       completeTask(task) {
-        task.completed = true;
+        if (task.completed == true) {
+          task.completed = false;
+        } else if (task.completed == false) {
+          task.completed = true;
+        }
         this.$store.dispatch('completeTask', task)
-      }
+      },
     },
     computed: {
       user() {
@@ -107,7 +115,7 @@
         return this.$store.state.myQuote;
       },
       myWeather() {
-        return Math.round(this.$store.state.myWeather.main.temp * 9 / 5 - 459.67);
+        return this.$store.state.myWeather;
       }
     }
   }
@@ -154,10 +162,10 @@
     top: 1%;
     right: 0;
     margin-bottom: 10px;
-    margin-right: 40px;
+    margin-right: 30px;
     overflow: hidden;
     width: 250px;
-    max-height: 200px;
+    height: 200px;
     display: inline-block;
   }
 
@@ -176,8 +184,7 @@
   }
 
   .task-form {
-    margin: 0px 20px;
-    float: right;
+    max-width: 250px;
   }
 
   .bg-block {
@@ -187,13 +194,38 @@
   }
 
   .weather-display {
+    position: fixed;
     text-align: center;
     color: #ffffff;
-    height: 100px;
     margin: 10px;
     left: 0;
     height: auto;
     min-width: 150px;
+  }
+
+  .refresh-display {
+    position: fixed;
+    text-align: center;
+    color: #ffffff;
+    margin: 10px;
+    left: 0;
+    bottom: 0;
+    height: auto;
+    min-width: 200px;
+  }
+
+  .search-area {
+    max-width: 300px;
+    min-width: 300px;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    margin: 10px;
+    text-align: center;
+  }
+
+  .input-search {
+    width: 250px;
   }
 
   .btn-small {
@@ -207,7 +239,7 @@
   .btn-del {
     height: 15px;
     width: 12px;
-    padding: 0px 0px 2px 1px;
+    padding: 0px 2px 2px 1px;
     margin: -2px 0px 0px 8px;
     line-height: 10px;
     font-size: 10px;
@@ -230,8 +262,12 @@
     padding: 0px 5px;
   }
 
+  .btn-refresh {
+    margin: 5px 10px 10px -5px;
+  }
+
   .greeting {
-    top: -100px;
+    top: 10px;
     color: #ffffff;
     min-width: 200px;
   }
@@ -257,7 +293,11 @@
   }
 
   .stretch:hover {
-    width: 30%;
+    height: 800px;
     overflow: hidden;
+  }
+
+  .task-view:hover {
+    height: auto;
   }
 </style>

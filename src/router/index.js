@@ -4,7 +4,6 @@ import Dashboard from '@/components/Dashboard'
 import Register from '@/components/Register'
 import Login from '@/components/Login'
 import Store from '../store'
-import Clock from '@/components/Clock'
 
 Vue.use(Router)
 
